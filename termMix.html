@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+:root {
+  --main_background-color: #232323;
+  --main_text-color: #bbb;
+  --text_inside: black;
+}
+
+html {
+    background-color: var(--main_background-color);
+    color: var(--main_text-color);
+}
+body {
+    width: 50em;
+    margin: auto;
+    padding: 1em 5em;
+    border-left: 1px solid #bbb;
+    border-right: 1px solid #bbb;
+}
+
+textarea { 
+    width: 100%;
+    font-size: 1.2em;
+    margin-bottom: 1em;
+    height: 4em;
+    color: black;
+}
+
+div {
+    margin: 0.5em;
+    font-size: 1.2em;
+}
+
+#withBut {
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+but {
+width: 7em;
+display: block;
+display: flex;
+align-items: center;
+justify-content: center;
+padding: 0.4em;
+margin: 0.5em;
+border: 4px solid black;
+border-radius: 1rem;
+background: white;
+font-weight: bold;
+text-align: center;
+color: var(--text_inside);
+}
+
+table {
+    width: 100%;
+}
+table, td, th {
+    border: 1px solid #444;
+}
+
+.terminators {
+    display: flex;
+    flex-direction: column;
+    align-items: baseline;
+    border: 5px solid #444;
+    padding: 0.75rem;
+    gap: .75rem;
+    font-size: 1.25rem;
+    border-radius: 1rem;
+}
+
+#amino {
+    width: 15em;
+}
+
+.block {
+    font-size: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+}
+
+input {
+    display: block;
+}
+
+#all {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: center;
+}
+
+.oneCheckBox {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    gap: 0.5em;
+    font-size: 1.25rem;
+}
+
+.mode {
+    display: flex;
+    padding: 1rem 0;
+    gap: 1rem;
+}
+
+#mainHeader {
+    font-size: 1.5rem;
+}
+
+input[type="checkbox"], input[type="radio"] {
+    all: unset;
+    background: var(--main_background-color);
+    width: 1em;
+    height: 1em;
+    border: 1px solid var(--main_text-color);
+    border-radius: .5rem;
+    transition: all 300ms;
+}
+input:checked {
+    background: var(--main_text-color);
+    border-radius: 50%;
+}
+#fullOutput {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+</style>
+
+</head>
+<body>
+
+    <header id="mainHeader">Termination Mix</header>
+    <div class = "mode">
+        <input name="r1" type="radio" value="" checked="checked"> Suitable only
+        <input name="r1" type="radio" value=""> All variants
+    </div> </div>
+
+    <div id="all">
+
+    <div class = "block"> 
+    <header>Unmodified</header>
+    <div class = "terminators">
+        <div class="oneCheckBox">
+            <input name="c1" type="checkbox" value="A--ddATP" checked="checked"> 
+            ddATP
+        </div>
+        <div class="oneCheckBox">
+            <input name="c1" type="checkbox" value="T--ddTTP" checked="checked"> 
+            ddTTP
+        </div>
+        <div class="oneCheckBox">
+            <input name="c1" type="checkbox" value="C--ddCTP" checked="checked"> 
+            ddCTP
+        </div>
+        <div class="oneCheckBox">
+            <input name="c1" type="checkbox" value="G--ddGTP" checked="checked"> 
+            ddGTP
+        </div>
+        <div class="oneCheckBox">
+            <input name="c1" type="checkbox" value="T--ddUTP" checked="checked"> 
+            ddUTP
+        </div>
+    </div> 
+    <div class="oneCheckBox"> 
+        <input name="blockAll1" id="block1" type="checkbox" value="">
+         Select All
+    </div>
+</div>
+
+    <div class = "block"> 
+        <header>Acyclic</header>
+        <div class = "terminators">
+            <div class="oneCheckBox">
+                <input name="c2" type="checkbox" value="A--acyATP" >
+                acyATP
+            </div>
+            <div class="oneCheckBox">
+                <input name="c2" type="checkbox" value="T--acyTTP" >
+                 acyTTP
+            </div>
+            <div class="oneCheckBox">
+                <input name="c2" type="checkbox" value="C--acyCTP" >
+                 acyCTP
+            </div>
+            <div class="oneCheckBox">
+                <input name="c2" type="checkbox" value="G--acyGTP" >
+                 acyGTP
+            </div>
+        </div> 
+        <div class="oneCheckBox"> 
+            <input name="blockAll2" id="block2" type="checkbox" value=""> 
+            Select All
+        </div>
+    </div>
+
+    <div class = "block"> 
+        <header>Amino</header>
+        <div class = "terminators" id="amino">
+            <div class="oneCheckBox">
+                <input name="c3" type="checkbox" value="A--propargyl-amino-ATP" >
+                 propargyl-amino-ATP
+            </div>
+            <div class="oneCheckBox">
+                <input name="c3" type="checkbox" value="T--propargyl-amino-ddUTP" >
+                 propargyl-amino-ddUTP
+            </div>
+            <div class="oneCheckBox">
+                <input name="c3" type="checkbox" value="C--propargyl-amino-ddCTP" >
+                 propargyl-amino-ddCTP
+            </div>
+            <div class="oneCheckBox">
+                <input name="c3" type="checkbox" value="G--propargyl-amino-ddGTP" > 
+                propargyl-amino-ddGTP
+            </div>
+            <div class="oneCheckBox">
+                <input name="c3" type="checkbox" value="T--AA-ddUTP" >
+                 AA-ddUTP
+            </div>
+            <div class="oneCheckBox">
+                <input name="c3" type="checkbox" value="T--amino-11-ddUTP" >
+                 amino-11-ddUTP
+            </div>
+        </div> 
+        <div class="oneCheckBox"> 
+            <input name="blockAll3" id="block3" type="checkbox" value="">
+             Select All
+        </div>
+    </div>
+
+    <div class = "block"> 
+        <header>Morpholino</header>
+        <div class = "terminators">
+            <div class="oneCheckBox">
+                <input name="c4" type="checkbox" value="A--morATP" >
+                 morATP
+            </div>
+            <div class="oneCheckBox">
+                <input name="c4" type="checkbox" value="T--morTTP" >
+                 morTTP
+            </div>
+            <div class="oneCheckBox">
+                <input name="c4" type="checkbox" value="C--morCTP" >
+                 morCTP
+            </div>
+            <div class="oneCheckBox">
+                 <input name="c4" type="checkbox" value="G--morGTP" >
+                  morGTP
+            </div>
+        </div> 
+        <div class="oneCheckBox"> 
+            <input name="blockAll4" id="block4" type="checkbox" value="">
+             Select All
+        </div>
+    </div>
+    </div>
+
+
+    <div id='withBut'><but id="run">Run</but></div>
+    <div id="fullOutput">
+    <table-out></table-out>
+    </div>
+
+    <template> 
+        <table></table>
+        <style>
+            table {
+                width: 100%;
+                margin: 2em;
+                border-collapse: collapse;
+                margin: 0;
+            }
+            table, td, th {
+                border: 1px solid #444;
+                font-weight: 400;
+            }
+
+            th {
+                width: 10em;
+            }
+            th:first-child {
+                font-weight: 800;
+            }
+
+        </style>
+    </template>
+
+<script> 
+
+//класс WC - для рендера аутпутной таблицы
+class WCoutTable extends HTMLElement {
+    shadowDOM = this.attachShadow({mode: "closed"});
+    constructor() {
+        super();
+        const template = document.querySelector("template").content.cloneNode(true);
+        this.shadowDOM.appendChild(template);
+        this.table = this.shadowDOM.querySelector("table");
+    }
+    set html(htmlOutput) {
+        this.table.innerHTML = htmlOutput
+    }
+    clear() {
+        while (this.table.firstChild) {
+            this.table.firstChild.remove()
+        }
+    }
+    createHTable(object) {
+        this.clear();
+        /*
+            {
+                'Weight': [1,2,3,4,5],
+                'Type': [1,2,3,4,5],
+            }
+        */
+        const tableHTML = 
+        `<tr>
+            ${
+                Object.entries(object)
+                .map(
+                    tr =>
+                        `<th>${tr.flat().join('</th><th>')}</th>`
+                )
+                .join('</tr><tr>')
+            }
+        </tr>`
+        this.html = tableHTML;
+    }
+
+}
+customElements.define("table-out", WCoutTable);
+
+
+//radio button
+function rad (name) {
+    let r=document.getElementsByName(name);
+    let output = r[0].checked ? "suitable" : "all";
+    return output
+}
+
+//checkbox All
+function chbox (name) {
+    let ch=document.getElementsByName(name);
+    let output = ch[0].checked ? "all" : " not all";
+    return output
+}
+
+function selectBlock (blockName) {
+    let mode = chbox(blockName);
+    if (mode == "all") {
+        let block = document.getElementsByName("c"+blockName.slice(-1));
+        for (let i=0; i<block.length; i++) {
+            block[i].checked = "checked"
+        }
+    } else {
+        let block = document.getElementsByName("c"+blockName.slice(-1));
+        for (let i=0; i<block.length; i++) {
+            block[i].checked = false;
+        }
+    }
+}
+
+document.getElementById("run").addEventListener("click", check)
+document.getElementById("block1").addEventListener("change", ()=> selectBlock("blockAll1"));
+document.getElementById("block2").addEventListener("change", ()=> selectBlock("blockAll2"));
+document.getElementById("block3").addEventListener("change", ()=> selectBlock("blockAll3"));
+document.getElementById("block4").addEventListener("change", ()=> selectBlock("blockAll4"));
+
+//преобразует данные о выбранных буквах в массив из объектов для дальнейшей обработки
+function allTerm (chBox2set) {
+    let terminators = []
+    chBox2set.forEach(oneType => {
+        let allOneType = [];
+        for (let i=0; i<oneType.length; i++) {
+            allOneType.push(new Terminator(oneType[i]));
+        }
+        terminators.push(allOneType)
+    })
+  //  console.log("terminators", terminators);
+    return terminators
+}
+
+//собирает сеты выбранных букв (из одного блока!), на вход также подается старый сет (чтобы добавлять туда новые буквы)
+function checkbox (name, oldset) {
+    let cb=document.getElementsByName(name);
+    let newset = oldset;
+    for (let i=0; i<cb.length; i++) {
+        if (cb[i].checked) {
+            let val = cb[i].value.split("--");
+            if (val[0] == "A") {
+                newset[0].push(val[1]);}
+            if (val[0] == "T") {
+                newset[1].push(val[1])}
+            if (val[0] == "C") {
+                newset[2].push(val[1])}
+            if (val[0] == "G") {
+                newset[3].push(val[1])}
+        }
+    }
+    return newset
+}
+
+const fullOutput = document.getElementById("fullOutput")
+function check () {
+    clear(fullOutput);
+    let set = [[],[],[],[]];
+    let chBox1set = checkbox("c1", set);
+    let chBox2set = checkbox("c2", chBox1set);
+    let chBox3set = checkbox("c3", chBox2set);
+    let chBox4set = checkbox("c4", chBox3set);
+  //  console.log("chBox4set", chBox4set);
+    let terminators = allTerm(chBox4set);
+
+    let mode = rad("r1") //определяем, нужно ли показывать все варианты миксов или только подходящие
+    let allMixes = makeAllMixes (terminators) //генерируем все существующие варианты миксов
+  //  console.log("final all mixes", allMixes);
+    if (mode == "suitable") {
+        let suitMixes = findSuitable(allMixes);
+   //     console.log("final suitable Mixes", suitMixes);
+        WCrender(suitMixes)
+    } else {
+        WCrender(allMixes)
+    }        
+}   
+
+function clear(element) {
+    while (element.firstChild) {
+        element.firstChild.remove()
+    }
+}    
+
+const NUCLEOTIDES = ['A','T','C','G'];
+
+class Terminator {
+    
+    types = {
+        "ddATP": 296,
+        "ddTTP": 287,
+        "ddUTP": 274,
+        "ddCTP": 272,
+        "ddGTP": 312,
+
+        "acyATP": 271,
+        "acyTTP": 262,
+        "acyCTP": 247,
+        "acyGTP": 287,
+
+        "propargyl-amino-ATP": 348,
+        "propargyl-amino-ddUTP": 326,
+        "propargyl-amino-ddCTP": 325,
+        "propargyl-amino-ddGTP": 264,
+
+        "AA-ddUTP": 328,
+        "amino-11-ddUTP": 441,
+
+        "morATP": 311,
+        "morTTP": 302,
+        "morCTP": 287,
+        "morGTP": 327,
+
+        "d4TTP": 290
+    }
+
+    type = '';
+    weight = 0;
+    dA = { diff: 0, type: "" };
+    dT = { diff: 0, type: "" };
+    dC = { diff: 0, type: "" };
+    dG = { diff: 0, type: "" };
+
+    get value() {
+        return { type: this.type, weight: this.weight }
+    }
+
+    constructor(type) {
+        this.type = type;
+        this.weight = this.types[type];
+        if (!this.weight) throw new Error("Weight not found! Check type or contact Alina.");
+    }
+
+    calcDiff(terms) { // ATCG - объекты класса Terminator
+        NUCLEOTIDES.forEach(N => {
+            this[`d${N}`] = {
+                diff: this.weight - terms[N].weight,
+                type: terms[N].type,
+                difftype: `${this.type}-${terms[N].type}`
+            };
+        })
+    }
+
+    get isConflict() {
+        return [this.dA, this.dT, this.dC, this.dG].find((e)=> {
+            if (Math.abs(e.diff) < 16 && e.type != this.type) {
+                return true 
+            } else {
+                return false
+            }
+        })
+    }
+
+    get valueFull() {
+        const value = {
+            type: this.type,
+            weight: this.weight,
+        }
+        value[`${this.dA.type}`] = this.dA.diff;
+        value[`${this.dT.type}`] = this.dT.diff;
+        value[`${this.dC.type}`] = this.dC.diff;
+        value[`${this.dG.type}`] = this.dG.diff;
+
+        return value;
+    }
+
+    getCalcValueFull({A,T,C,G}) { // ATCG - объекты класса Terminator
+        this.calcDiff({A,T,C,G});
+        return this.valueFull;
+    }
+
+    get clone() {
+        return new Terminator(this.type);
+    }
+}
+
+class Mix {
+    constructor({A,T,C,G}) { // ATCG - объекты класса Terminator
+        this.A = A;
+        this.T = T;
+        this.C = C;
+        this.G = G;
+    }
+    get value() {
+        return {
+            A: this.A,
+            T: this.T,
+            C: this.C,
+            G: this.G,
+        }
+    }
+    calcDiff() {
+        this.A.calcDiff(this.value);
+        this.T.calcDiff(this.value);
+        this.C.calcDiff(this.value);
+        this.G.calcDiff(this.value);
+    }
+    get diffTable() {
+        const terms = [
+            this.A.getCalcValueFull(this.value),
+            this.T.getCalcValueFull(this.value),
+            this.G.getCalcValueFull(this.value),
+            this.C.getCalcValueFull(this.value),
+        ];
+
+        const table = {};
+
+        terms.forEach( term => {
+            Object.entries(term).forEach( ([key,value]) => {
+                if (!table[key]) table[key] = [];
+                table[key].push(value);
+            })
+        });
+        
+        return table;
+    }
+    get isConflict() {
+        this.calcDiff();
+        return (this.A.isConflict || this.T.isConflict || this.C.isConflict || this.G.isConflict);
+    }
+}
+
+    //генерируем все существующие варианты миксов
+    function makeAllMixes (terminators) {
+        let allMixes = [];
+        for (let typeNTP=0; typeNTP<4; typeNTP++) {
+            for (let varNTP1=0; varNTP1<terminators[typeNTP].length; varNTP1++) {
+                if (terminators[typeNTP+1]) {
+                for (let varNTP2=0; varNTP2<terminators[typeNTP+1].length; varNTP2++) {
+                    if (terminators[typeNTP+2]) {
+                    for (let varNTP3=0; varNTP3<terminators[typeNTP+2].length; varNTP3++) {
+                        if (terminators[typeNTP+3]) {
+                            for (let varNTP4=0; varNTP4<terminators[typeNTP+3].length; varNTP4++) {
+                                const mix = {
+                                    A: terminators[typeNTP][varNTP1].clone,
+                                    T: terminators[typeNTP+1][varNTP2].clone,
+                                    C: terminators[typeNTP+2][varNTP3].clone,
+                                    G: terminators[typeNTP+3][varNTP4].clone,
+                                };
+                                allMixes.push(new Mix(mix));
+                            }}}
+                        }
+                    }
+                }   
+            }
+        }
+        return allMixes
+    }
+
+    function massCompare (mix) {
+        let mix1 = [];
+        mix.forEach(obj => {
+            mix1.push(obj.weight)
+        })
+        mix1 = mix1.sort();
+        let arrayConflicts = [];
+        for (let i=0; i < mix1.length; i++) {
+            let mass1 = mix1[i];
+            for (let k = i + 1; k < mix1.length; k++) {
+                let mass2 = mix1[k];
+                let delta = mass2 - mass1;
+                if (delta < 16 && delta > -16) {
+                    return ["there is a conflict"]
+                }
+            }
+        }
+        return arrayConflicts
+    }
+
+    //из всех вариантов миксов составить список из подходящих
+    function findSuitable (allMixes) {
+            let suitMixes = [];
+            allMixes.forEach(mix => {
+                if (!mix.isConflict) {
+                suitMixes.push(mix);
+                }
+            })
+            return suitMixes
+        }
+
+    //функция для рендера веб-компонентов и дальнейшего аутпута
+    function WCrender (Mixes) {
+        Mixes.forEach((oneMix) => {
+            const onetable = new WCoutTable();
+            onetable.createHTable(oneMix.diffTable);
+            fullOutput.appendChild(onetable);
+        })
+    }
+
+    document.getElementById("run").addEventListener("click", check)
+
+</script>
+
+
+
+</body>
+</html>
