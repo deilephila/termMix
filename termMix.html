@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <style>
-:root {
+    :root {
   --main_background-color: #232323;
   --main_text-color: #bbb;
   --text_inside: black;
@@ -21,17 +21,47 @@ body {
     border-right: 1px solid #bbb;
 }
 
-textarea { 
-    width: 100%;
-    font-size: 1.2em;
-    margin-bottom: 1em;
-    height: 4em;
-    color: black;
-}
-
 div {
     margin: 0.5em;
     font-size: 1.2em;
+}
+
+input {
+    display: block;
+}
+
+.mode {
+    display: flex;
+    padding: 1rem 0;
+    gap: 1rem;
+}
+
+
+#mainHeader {
+    font-size: 1.5rem;
+}
+
+#all {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: center;
+    display: flex;
+    gap: 1rem;
+}
+
+input[type="checkbox"], input[type="radio"] {
+    all: unset;
+    background: var(--main_background-color);
+    width: 1em;
+    height: 1em;
+    border: 1px solid var(--main_text-color);
+    border-radius: .5rem;
+    transition: all 300ms;
+}
+input:checked {
+    background: var(--main_text-color);
+    border-radius: 50%;
 }
 
 #withBut {
@@ -56,596 +86,1095 @@ text-align: center;
 color: var(--text_inside);
 }
 
-table {
-    width: 100%;
-}
-table, td, th {
-    border: 1px solid #444;
-}
-
-.terminators {
-    display: flex;
-    flex-direction: column;
-    align-items: baseline;
-    border: 5px solid #444;
-    padding: 0.75rem;
-    gap: .75rem;
-    font-size: 1.25rem;
-    border-radius: 1rem;
-}
-
-#amino {
-    width: 15em;
-}
-
-.block {
-    font-size: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin: 0;
-}
-
-input {
-    display: block;
-}
-
-#all {
-    display: flex;
-    flex-direction: row;
-    align-items: baseline;
-    justify-content: center;
-}
-
-.oneCheckBox {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0;
-    gap: 0.5em;
-    font-size: 1.25rem;
-}
-
-.mode {
-    display: flex;
-    padding: 1rem 0;
-    gap: 1rem;
-}
-
-#mainHeader {
-    font-size: 1.5rem;
-}
-
-input[type="checkbox"], input[type="radio"] {
-    all: unset;
-    background: var(--main_background-color);
-    width: 1em;
-    height: 1em;
-    border: 1px solid var(--main_text-color);
-    border-radius: .5rem;
-    transition: all 300ms;
-}
-input:checked {
-    background: var(--main_text-color);
-    border-radius: 50%;
-}
-#fullOutput {
+#out {
     display: flex;
     flex-direction: column;
     gap: 2rem;
-    margin-top: 2rem;
+}
+
+#warning {
+    text-align: center;
+    font-size: 1.7rem;
 }
 </style>
 
-</head>
+
 <body>
+<template id="blockTermToSelect">
+    <div class = "block"> 
+        <p></p>
+        <div class="terminators">
+        </div>
+        <div class="selectWholeBlock"> 
+            <input type="checkbox" id="checkall" value="">
+             Select All
+        </div>
+    </div>
+    <style>
+        p {
+            font-size: 1.5rem;
+            margin: 0;
+        }
+        .block {
+            font-size: 1.2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            gap: 1rem;
+        }
+
+        .terminators {
+            display: flex;
+            flex-direction: column;
+            align-items: baseline;
+            border: 5px solid #444;
+            padding: 0.75rem;
+            gap: .75rem;
+            font-size: 1.25rem;
+            border-radius: 1rem;
+        }
+
+        input[type="checkbox"] {
+            all: unset;
+            background: #232323;
+            width: 1em;
+            height: 1em;
+            border: 1px solid #bbb;
+            border-radius: .5rem;
+            transition: all 300ms;
+            display: inline-block;
+        }
+
+        input:checked {
+            background: #bbb;
+            border-radius: 50%;
+        }
+
+    </style>
+</template>
+
+<template id="oneTermToSelectInsideBlock">
+    <div class="oneCheckBox">
+        <input type="checkbox"> 
+        <span></span>
+    </div> 
+
+    <style>
+        input[type="checkbox"] {
+            all: unset;
+            background: #232323;
+            width: 1em;
+            height: 1em;
+            border: 1px solid #bbb;
+            border-radius: .5rem;
+            transition: all 300ms;
+        }
+
+        input:checked {
+            background: #bbb;
+            border-radius: 50%;
+        }
+
+        .oneCheckBox {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            gap: 0.5em;
+            font-size: 1.25rem;
+        }
+    </style>
+</template>
+
+<template id="oneMixOut">
+    <header></header>
+    <table id="diffs"></table>
+    <div class="flex-h">
+        <table id="stats"></table>
+        <div id="price">
+            <p></p>
+            <details>
+                <summary></summary>
+                <ul>
+                    <li class="info" id="A">
+                    <li class="info" id="T">
+                    <li class="info" id="C">
+                    <li class="info" id="G">
+                </ul>
+            </details>
+        </div>
+    </div>
+    <hr />
+    <style>
+        :host {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding: 1.5rem;
+            transition: all 300ms;
+            border-radius: 1.5rem;
+            border: 2px solid var(--main_background-color);
+        }
+        :host(:hover) {
+            border: 2px solid #444;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, td, th {
+            border: 1px solid #444;
+            font-weight: 400;
+            background: var(--main_background-color);
+        }
+
+        th {
+            width: 10em;
+        }
+        th:first-child {
+            font-weight: 800;
+        }
+        th[color="conflict"] {
+            background: #660000;
+        }
+
+        .bold {
+            font-weight: 800;
+        }
+
+        #stats {
+            width: min-content;
+            height: fit-content;
+        }
+        #stats th {
+            text-align: start;
+            padding: .25rem .75rem;
+        }
+        *:empty {
+            display: none;
+        }
+        * {
+            margin: 0;
+        }
+        #price {
+            padding: .5rem 0;
+        }
+        .flex-h {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .info {
+            font-size: 1rem;
+        }
+
+        summary {
+            margin-bottom: 0.8rem;
+        }
+    </style>
+</template>
+
+<template id="sortSelect">
+    <div>
+        <label for="sort">Sort</label>
+        <select name="sort">
+            <option name="sort" id="default" selected disabled> none </option>
+            <option name="sort" value="general" id="generalSort"> by general rating </option>
+            <option name="sort" value="price"> by price </option>
+            <option name="sort" value="min"> by min </option>
+            <option name="sort" value="max"> by max </option>
+            <option name="sort" value="sum"> by sum </option>
+        </select>
+    </div>
+
+    <style>
+        :host {
+            display: flex;
+            flex-direction: row-reverse;
+        }
+        
+        #sort {
+            font-size: 1.2rem;
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-end;
+            margin: 0;
+            gap: 1rem;
+        }
+        label {
+            margin: 1rem;
+        }
+    </style>
+</template>
+
+<template id="Warning">
+    <div><p id="warning"></p></div>
+    <style>
+        #warning {
+            text-align: center;
+            font-size: 1.7rem;
+        }
+    </style>
+</template>
+
+<template id="AddFilter">
+    <div>
+        <label for="show">Filter</label>
+        <select name="show">
+            <option name="sort" id="default" selected> All </option>
+        </select>
+    </div>
+
+</template>
 
     <header id="mainHeader">Termination Mix</header>
     <div class = "mode">
         <input name="r1" type="radio" value="" checked="checked"> Suitable only
         <input name="r1" type="radio" value=""> All variants
     </div> </div>
-
-    <div id="all">
-
-    <div class = "block"> 
-    <header>Unmodified</header>
-    <div class = "terminators">
-        <div class="oneCheckBox">
-            <input name="c1" type="checkbox" value="A--ddATP" checked="checked"> 
-            ddATP
-        </div>
-        <div class="oneCheckBox">
-            <input name="c1" type="checkbox" value="T--ddTTP" checked="checked"> 
-            ddTTP
-        </div>
-        <div class="oneCheckBox">
-            <input name="c1" type="checkbox" value="C--ddCTP" checked="checked"> 
-            ddCTP
-        </div>
-        <div class="oneCheckBox">
-            <input name="c1" type="checkbox" value="G--ddGTP" checked="checked"> 
-            ddGTP
-        </div>
-        <div class="oneCheckBox">
-            <input name="c1" type="checkbox" value="T--ddUTP" checked="checked"> 
-            ddUTP
-        </div>
-    </div> 
-    <div class="oneCheckBox"> 
-        <input name="blockAll1" id="block1" type="checkbox" value="" checked="checked">
-         Select All
-    </div>
-</div>
-
-    <div class = "block"> 
-        <header>Acyclic</header>
-        <div class = "terminators">
-            <div class="oneCheckBox">
-                <input name="c2" type="checkbox" value="A--acyATP" >
-                acyATP
-            </div>
-            <div class="oneCheckBox">
-                <input name="c2" type="checkbox" value="T--acyTTP" >
-                 acyTTP
-            </div>
-            <div class="oneCheckBox">
-                <input name="c2" type="checkbox" value="C--acyCTP" >
-                 acyCTP
-            </div>
-            <div class="oneCheckBox">
-                <input name="c2" type="checkbox" value="G--acyGTP" >
-                 acyGTP
-            </div>
-        </div> 
-        <div class="oneCheckBox"> 
-            <input name="blockAll2" id="block2" type="checkbox" value=""> 
-            Select All
-        </div>
-    </div>
-
-    <div class = "block"> 
-        <header>Amino</header>
-        <div class = "terminators" id="amino">
-            <div class="oneCheckBox">
-                <input name="c3" type="checkbox" value="A--propargyl-amino-ATP" >
-                 propargyl-amino-ATP
-            </div>
-            <div class="oneCheckBox">
-                <input name="c3" type="checkbox" value="T--propargyl-amino-ddUTP" >
-                 propargyl-amino-ddUTP
-            </div>
-            <div class="oneCheckBox">
-                <input name="c3" type="checkbox" value="C--propargyl-amino-ddCTP" >
-                 propargyl-amino-ddCTP
-            </div>
-            <div class="oneCheckBox">
-                <input name="c3" type="checkbox" value="G--propargyl-amino-ddGTP" > 
-                propargyl-amino-ddGTP
-            </div>
-            <div class="oneCheckBox">
-                <input name="c3" type="checkbox" value="T--AA-ddUTP" >
-                 AA-ddUTP
-            </div>
-            <div class="oneCheckBox">
-                <input name="c3" type="checkbox" value="T--amino-11-ddUTP" >
-                 amino-11-ddUTP
-            </div>
-        </div> 
-        <div class="oneCheckBox"> 
-            <input name="blockAll3" id="block3" type="checkbox" value="">
-             Select All
-        </div>
-    </div>
-
-    <div class = "block"> 
-        <header>Morpholino</header>
-        <div class = "terminators">
-            <div class="oneCheckBox">
-                <input name="c4" type="checkbox" value="A--morATP" >
-                 morATP
-            </div>
-            <div class="oneCheckBox">
-                <input name="c4" type="checkbox" value="T--morTTP" >
-                 morTTP
-            </div>
-            <div class="oneCheckBox">
-                <input name="c4" type="checkbox" value="C--morCTP" >
-                 morCTP
-            </div>
-            <div class="oneCheckBox">
-                 <input name="c4" type="checkbox" value="G--morGTP" >
-                  morGTP
-            </div>
-        </div> 
-        <div class="oneCheckBox"> 
-            <input name="blockAll4" id="block4" type="checkbox" value="">
-             Select All
-        </div>
-    </div>
-    </div>
-
-
+    <div id="all"></div>
     <div id='withBut'><but id="run">Run</but></div>
-    <div id="fullOutput">
-    <table-out></table-out>
-    </div>
+    <div id="selectShow"></div>
+    <div id="sort"></div>
+    <div id="out"></div>
 
-    <template> 
-        <table></table>
-        <style>
-            table {
-                width: 100%;
-                margin: 2em;
-                border-collapse: collapse;
-                margin: 0;
-            }
-            table, td, th {
-                border: 1px solid #444;
-                font-weight: 400;
-            }
 
-            th {
-                width: 10em;
-            }
-            th:first-child {
-                font-weight: 800;
-            }
+<script>
 
-        </style>
-    </template>
+const letters = ["A", "T", "C", "G"];
 
-<script> 
+const GeneralSortParametres = [28, 50, 70, 100, 440]; //параметры general сортировки 
+// (интервалы цены 28-49, 50-69, 70-99, выше 99 рублей)
 
-//класс WC - для рендера аутпутной таблицы
-class WCoutTable extends HTMLElement {
+const sortMethods = {
+            general: (a,b) => a.generalSort.score - b.generalSort.score,
+            price: (a,b) => a.sumPrice - b.sumPrice,
+            min: (a,b) => a.stats.min - b.stats.min,
+            max: (a,b) => a.stats.max - b.stats.max,
+            sum: (a,b) => a.stats.sum - b.stats.sum,
+        }
+
+let selectedSort;
+
+const allterms = {
+        "ddATP": {
+            type: "A",
+            massSpectra: 296,
+            price: 
+                [{
+                    rub: 7,
+                    company: "Биолабмикс",
+                    info: "оф.сайт"},
+                {   rub: 17,
+                    company: "ДНК-Синтез",
+                    info: "оф.сайт"},
+                {   rub: 20,
+                    company: "ДиаМ",
+                    info: "оф.сайт"}]},
+        "ddTTP": {
+            type: "T",
+            massSpectra: 287,
+            price: 
+                [{
+                    rub: 7,
+                    company: "Биолабмикс",
+                    info: "оф.сайт"},
+                {   rub: 17,
+                    company: "ДНК-Синтез",
+                    info: "оф.сайт"},
+                {   rub: 20,
+                    company: "ДиаМ",
+                    info: "оф.сайт"}]},
+        "ddUTP": {
+            type: "T",
+            massSpectra: 274,
+            price: 
+                [{
+                    rub: 7,
+                    company: "Биолабмикс",
+                    info: "оф.сайт"}]},
+        "ddCTP": {
+            type: "C",
+            massSpectra: 272,
+            price: 
+                [{
+                    rub: 7,
+                    company: "Биолабмикс",
+                    info: "оф.сайт",
+                    priceForOne: true},
+                {   rub: 17,
+                    company: "ДНК-Синтез",
+                    info: "оф.сайт"},
+                {   rub: 20,
+                    company: "ДиаМ",
+                    info: "оф.сайт"}]},
+        "ddGTP": {
+            type: "G",
+            massSpectra: 312,
+            price: 
+                [{
+                    rub: 7,
+                    company: "Биолабмикс",
+                    info: "оф.сайт"},
+                {   rub: 17,
+                    company: "ДНК-Синтез",
+                    info: "оф.сайт"},
+                {   rub: 20,
+                    company: "ДиаМ",
+                    info: "оф.сайт"}]},
+
+        "acyATP": {
+            type: "A",
+            massSpectra: 271,
+            price: 
+                [{
+                    rub: 24,
+                    company: "NEB (через Синген)",
+                    info: "КП № УТ-8819 от 13.12.2023",
+                    priceForOne: false}]},
+        "acyTTP": {
+            type: "T",
+            massSpectra: 262,
+            price: 
+                [{
+                    rub: 24,
+                    company: "NEB (через Синген)",
+                    info: "КП № УТ-8819 от 13.12.2023",
+                    priceForOne: false}]},
+        "acyCTP": {
+            type: "C",
+            massSpectra: 247,
+            price: 
+                [{
+                    rub: 24,
+                    company: "NEB (через Синген)",
+                    info: "КП № УТ-8819 от 13.12.2023",
+                    priceForOne: false}]},
+        "acyGTP": {
+            type: "G",
+            massSpectra: 287,
+            price: 
+                [{
+                    rub: 24,
+                    company: "NEB (через Синген)",
+                    info: "КП № УТ-8819 от 13.12.2023",
+                    priceForOne: false}]},
+
+        "propargyl-amino-ddATP": {
+            type: "A",
+            massSpectra: 348,
+            price: 
+                [{
+                    rub: 109,
+                    company: "Jena Bioscience (через SPUTNIK)",
+                    info: "оф. сайт sputnik-group",}]},
+
+        "propargyl-amino-ddUTP": {
+            type: "T",
+            massSpectra: 326,
+            price: 
+                [{
+                    rub: 32,
+                    company: "Lumiprobe",
+                    info: "КП #D9366 от 20.12.2023"},
+                {
+                    rub: 100,
+                    company: "Jena Bioscience (через SPUTNIK)",
+                    info: "оф. сайт sputnik-group"}]},
+
+        "propargyl-amino-ddCTP": {
+            type: "C",
+            massSpectra: 325,
+            price: 
+                [{
+                    rub: 99,
+                    company: "Jena Bioscience (через SPUTNIK)",
+                    info: "оф. сайт sputnik-group"}]},
+                    
+        "propargyl-amino-ddGTP": {
+            type: "G",
+            massSpectra: 264,
+            price: 
+                [{
+                    rub: 186,
+                    company: "Jena Bioscience (через SPUTNIK)",
+                    info: "оф. сайт sputnik-group"}]},
+
+        "AA-ddUTP": {
+            type: "T",
+            massSpectra: 328,
+            price: 
+                [{
+                    rub: 36,
+                    company: "Lumiprobe",
+                    info: "КП #D9366 от 20.12.2023"}]},
+
+        "amino-11-ddUTP": {
+            type: "T",
+            massSpectra: 441,
+            price: 
+                [{
+                    rub: 45,
+                    company: "Lumiprobe",
+                    info: "оф. сайт"}]},
+
+        "morATP": {
+            type: "A",
+            massSpectra: 311,
+            price: 
+                [{
+                    rub: 2,
+                    company: "Биолабмикс",
+                    info: "оф. сайт"},
+                {
+                    rub: 6,
+                    company: "ДиаМ",
+                    info: "оф. сайт"}]},
+        "morUTP": {
+            type: "T",
+            massSpectra: 302,
+            price: 
+                [{
+                    rub: 2,
+                    company: "Биолабмикс",
+                    info: "оф. сайт"},
+                {
+                    rub: 5,
+                    company: "ДиаМ",
+                    info: "оф. сайт"}]},
+        "morCTP": {
+            type: "C",
+            massSpectra: 287,
+            price: 
+                [{
+                    rub: 2,
+                    company: "Биолабмикс",
+                    info: "оф. сайт"},
+                {
+                    rub: 5,
+                    company: "ДиаМ",
+                    info: "оф. сайт"}]},
+        "morGTP": {
+            type: "G",
+            massSpectra: 327,
+            price: 
+                [{
+                    rub: 2,
+                    company: "Биолабмикс",
+                    info: "оф. сайт"},
+                {
+                    rub: 6,
+                    company: "ДиаМ",
+                    info: "оф. сайт"}]},
+
+        "d4TTP": {
+            type: "T",
+            massSpectra: 290}
+    }
+
+const out = document.getElementById("out");
+const selectShow = document.getElementById("selectShow"); 
+
+//web-component for oneTerm - input checkbox inside the block
+customElements.define("one-term", class extends HTMLElement {
+    
     shadowDOM = this.attachShadow({mode: "closed"});
+    TermName = "";
+
     constructor() {
         super();
-        const template = document.querySelector("template").content.cloneNode(true);
+
+        const template = document
+            .getElementById('oneTermToSelectInsideBlock')
+            .content.cloneNode(true);
+        
         this.shadowDOM.appendChild(template);
-        this.table = this.shadowDOM.querySelector("table");
+        this.checkbox = this.shadowDOM.querySelector("input");
     }
-    set html(htmlOutput) {
-        this.table.innerHTML = htmlOutput
+
+    set name(name) {
+        this.TermName = name;
+        this.shadowDOM.querySelector('span').innerText = this.TermName;
+        
     }
-    clear() {
-        while (this.table.firstChild) {
-            this.table.firstChild.remove()
-        }
+
+    get state() {
+        return this.checkbox.checked 
     }
-    createHTable(object) {
-        console.log(object)
-        this.clear();
+
+    check() {
+        this.checkbox.checked = true
+    }
+
+    uncheck() {
+        this.checkbox.checked = false
+    }
+
+    toggle() {
+        this.checkbox.checked = !this.checkbox.checked
+    }
+
+});
+
+//web-component for block of terminators
+customElements.define("block-select", class extends HTMLElement {
+    
+    shadowDOM = this.attachShadow({mode: "closed"});
+    name = "";
+    termList = [];
+
+    constructor() {
+        super();
+        const template = document.getElementById('blockTermToSelect').content.cloneNode(true);
+        this.shadowDOM.appendChild(template);
+        this.checkboxes = this.shadowDOM.querySelector('.terminators');
+        this.checkboxAll = this.shadowDOM.getElementById("checkall");
+    }
+
+    set blockName(name) {
+        this.name = name;
+        const header = this.shadowDOM.querySelector('p');
+        header.innerText = this.name;
+    }
+
+    addTerm(name) {
+        const oneterm = document.createElement("one-term");
+        oneterm.name = name;
+        this.checkboxes.appendChild(oneterm);
+        this.termList.push(oneterm);
+    }
+
+    connectedCallback() {
+        this.checkboxAll.addEventListener("change",() => this.toggle())
+    }
+
+    get state() {
+        return this.checkboxAll.checked 
+    }
+
+    select() {
+        this.termList.forEach((oneterm) => {
+            oneterm.check()
+        })
+    }
+
+    unselect() {
+        this.termList.forEach((oneterm) => {
+            oneterm.uncheck()
+        })
+    }
+
+    toggle() {
+        this.state ? this.select() : this.unselect(); 
+    }
+
+    get selectedTerms() {
+        const selected = [];
+        this.termList.forEach((oneterm) => {
+            oneterm.state && selected.push(oneterm.TermName)
+        })
+        return selected
+    }
+
+})
+
+//web-component for output
+customElements.define("one-mix", class extends HTMLElement {
+    
+    shadowDOM = this.attachShadow({mode: "closed"});
+
+    constructor() {
+        super();
+
+        const template = document.getElementById('oneMixOut').content.cloneNode(true);
+        this.shadowDOM.appendChild(template);
+
+        this.tableDiff = this.shadowDOM.getElementById("diffs");
+        this.tableStats = this.shadowDOM.getElementById("stats");
+        this.header = this.shadowDOM.querySelector('header');
+        this.price = this.shadowDOM.querySelector('summary');
+        this.details = [
+            this.shadowDOM.getElementById('A'),
+            this.shadowDOM.getElementById('T'),
+            this.shadowDOM.getElementById('C'),
+            this.shadowDOM.getElementById('G')
+        ]
+    }
+
+    set addMix(onemix) {
+        this.mix = onemix;
+    }
+
+    makePreTableDiff(pre) {
+        const string1 = letters.map((letter) => {
+            return `<th class="bold" >${pre[letter].name}</th>`
+        });
+        string1.unshift(`<th>type</th>`);
+
+        const string2 = letters.map((letter) => {
+            return `<th>${pre[letter].weight}</th>`
+        });
+        string2.unshift(`<th>weight, Da</th>`);
+
+        const strings = letters.map((letterRow) => {
+            const row = letters.map((letterCol) => {
+                if (pre[letterRow].diffs[letterCol].status == "conflict") {
+                    return `<th color="conflict">${pre[letterRow].diffs[letterCol].diffValue}</th>`
+                } else {
+                    return `<th>${pre[letterRow].diffs[letterCol].diffValue}</th>`
+                }
+            })
+            row.unshift(`<th>${pre[letterRow].name}</th>`)
+            return row
+        });
+
+        const all = [[string1, string2], strings].flat();
+        const all2 = all.map(str => {
+            return `${str.join("")}`});
+        return all2
+    }
+
+    makePreTableStats(pre) {
+        const prearray = Object.entries(pre.stats);
+        const array = prearray.map(row => {
+            return `<th>${row.join("</th><th>")}</th>`
+        })
+        return array
+    }
+
+    renderTable(pretable, htmlElement) {
         const tableHTML = 
         `<tr>
             ${
-                Object.entries(object)
-                .map(
-                    tr =>
-                        `<th>${tr.flat().join('</th><th>')}</th>`
-                )
-                .join('</tr><tr>')
+                pretable.join('</tr><tr>')
             }
         </tr>`
-        this.html = tableHTML;
+        htmlElement.innerHTML = tableHTML
     }
 
+    makeDetails(mix) {
+        let details = [];
+        mix.prices.forEach (letter => {
+            const inf = `${letter.terminator}: ${letter.price} руб/реак., ${letter.company}, ${letter.info}`;
+            details.push(inf);        
+        })
+        return details
+    }
+
+    functionOUT() {
+        const pretableDiff = this.makePreTableDiff(this.mix);
+        const tableDiff = this.tableDiff;
+        this.renderTable(pretableDiff, tableDiff);
+
+        const pretableStats = this.makePreTableStats(this.mix);
+        const tablestats = this.tableStats;
+        this.renderTable(pretableStats, tablestats);
+
+        this.price.innerText = `Price for 1 reaction: ${this.mix.sumPrice} rub`;
+
+        const infoDetails = this.makeDetails(this.mix);
+
+        let haha = ["ha1", "ha2", "ha3", "ha4"]
+        for (let i=0; i<4; i++) {
+            this.details[i].innerText = infoDetails[i]
+        };
+    }
+
+});
+
+//web-component for sort-select
+customElements.define("sort-select", class extends HTMLElement {
+    
+    shadowDOM = this.attachShadow({mode: "closed"});
+
+    constructor() {
+        super();
+
+        const template = document.getElementById('sortSelect').content.cloneNode(true);
+        this.shadowDOM.appendChild(template);
+        this.tagSelect = this.shadowDOM.querySelector('select');
+        this.selectGeneralSort = this.shadowDOM.getElementById("generalSort");
+        this.selectDefault = this.shadowDOM.getElementById("default");
+       
+    }
+    set addMixes(mixes) {
+        this.mixesToRender = mixes
+    }
+
+    stateGeneralSelect(state) {
+        if (state == true && this.selectGeneralSort.selected == true) {
+            this.selectGeneralSort.selected == false;
+            this.selectDefault.selected = true;
+        }
+        this.selectGeneralSort.disabled = state;
+    }
+
+
+    connectedCallback() {
+        this.tagSelect.addEventListener("change", () => {
+            selectedSort = this.tagSelect.value;
+            const sortedMixToRender = this.mixesToRender.sort(sortMethods[selectedSort]);
+            toRender(sortedMixToRender);
+        })
+    }
+
+
+
+})
+
+//web-component for warning output
+customElements.define("warning-output", class extends HTMLElement {
+    
+    shadowDOM = this.attachShadow({mode: "closed"});
+
+    constructor() {
+        super();
+
+        const template = document.getElementById('Warning').content.cloneNode(true);
+        this.shadowDOM.appendChild(template);
+
+        this.html = this.shadowDOM.getElementById("warning");
+        this.html.innerHTML = "There is no such termination mix  :("
+    }
+
+})
+
+
+//const test1 = document.createElement("add-filter");
+//selectShow.appendChild(test1);
+
+//web-component for add Filter
+customElements.define("add-filter", class extends HTMLElement {
+    
+    shadowDOM = this.attachShadow({mode: "closed"});
+
+    constructor() {
+        super();
+
+        const template = document.getElementById('AddFilter').content.cloneNode(true);
+        this.shadowDOM.appendChild(template);
+
+        this.selectHTML = this.shadowDOM.querySelector("select");
+        this.addSelected = "ddATP"
+
+    }
+
+    set addSelected (name) {
+        const displayed = document.createElement("option");
+        displayed.name = "show";
+        displayed.value = name;
+        displayed.innerHTML = name;
+        this.selectHTML.appendChild(displayed)
+    }
+
+})
+
+const allBlocks = [ 
+    {   name: "Unmodified",
+        terms: ["ddATP","ddTTP", "ddCTP", "ddGTP", "ddUTP"]},
+    {   name: "Acyclic",
+        terms: ["acyATP","acyTTP", "acyCTP", "acyGTP"]},
+    {   name: "Amino",
+        terms: ["propargyl-amino-ddATP",  "propargyl-amino-ddUTP", 
+        "propargyl-amino-ddCTP", "propargyl-amino-ddGTP",
+        "AA-ddUTP", "amino-11-ddUTP"]},
+    {   name: "Morpholino",
+        terms: ["morATP", "morUTP", "morCTP","morGTP"]}
+]
+
+//рендерим блоки терминаторов на странице
+const allBlocksElements = allBlocks.map (oneblock => {
+    const block = document.createElement("block-select");
+    block.blockName = oneblock.name;
+    oneblock.terms.forEach( t => block.addTerm(t) );
+    document.getElementById("all").appendChild(block);
+    return(block);
+})
+
+
+function makeTermList() {
+    let allSelectedTerms = allBlocksElements
+        .map(oneblock => oneblock.selectedTerms).flat();
+  //  console.log(allSelectedTerms);
+    const filtered = letters.reduce((accumulator,letter) => {
+        accumulator[letter] = allSelectedTerms.filter(term => allterms[term].type == letter);
+        return accumulator;
+    }, new Object);
+ //   console.log(filtered);
+    return filtered
 }
-customElements.define("table-out", WCoutTable);
+
+function makeAllMixes(terms) {
+    let allMixes = [];
+        for (let varNTP1=0; varNTP1<terms["A"].length; varNTP1++) {
+            for (let varNTP2=0; varNTP2<terms["T"].length; varNTP2++) {
+                for (let varNTP3=0; varNTP3<terms["C"].length; varNTP3++) {
+                    for (let varNTP4=0; varNTP4<terms["G"].length; varNTP4++) {
+                        const mix = {
+                            A: terms["A"][varNTP1],
+                            T: terms["T"][varNTP2],
+                            C: terms["C"][varNTP3],
+                            G: terms["G"][varNTP4],
+                        };
+                        allMixes.push(mix);
+                    }
+                }
+            }
+        }
+    return allMixes
+}
+
+class Mix {
+    constructor(onemix) {
+        //тут создаем объекты из трех ключей
+        letters.forEach (letter => {
+            this[letter] = {
+                name: onemix[letter],
+                type: letter,
+                weight: allterms[onemix[letter]].massSpectra
+            }
+        })
+        // а тут добавляем в каждый объект (this.A/T/C/G) ключ diff, в его значении - obj
+        //(формируется методом calculateDiffs)
+        letters.forEach (letter => {
+            this.calculateDiffs(this[letter]);
+        });
+        this.All = [this.A, this.T, this.C, this.G];
+        
+        this.makeConflictStatus(); // тут добавляем this.status = conflict / suitable
+        this.makeStatistic();
+        this.makePrice();
+    }
+
+    calculateDiffs(oneterm) {
+        oneterm.diffs = new Object;
+        letters.forEach (letter => {
+            oneterm.diffs[letter] = {
+                diffValue: oneterm.weight - allterms[this[letter].name].massSpectra,
+                comparedType: letter,
+                names: `${oneterm.name}-${this[letter].name}`,
+            };
+            oneterm.diffs[letter].status = 
+            (Math.abs(oneterm.diffs[letter].diffValue) < 16 
+            && oneterm.type != letter) ? "conflict" : "ok";
+        })
+        return oneterm;
+    }
+
+    //это я бы еще переписала, можно не получать массив из дифов, и вообще прерывать весь цикл
+    //как только там появляется значение <16, потому что тогда мы сразу можем присваивать статус conflict
+    makeConflictStatus() {
+        const all = this.All;
+        let alldiffs = [];
+        for (let term=0; term<4; term++) {
+            for (let i=0; i<4; i++) {
+                    if (all[term].type != all[term].diffs[letters[i]].comparedType) {
+                        alldiffs.push(all[term].diffs[letters[i]].diffValue);
+                    }
+                }
+        }
+        let conflicts = [];
+
+        this.status = alldiffs.some(d => Math.abs(d) < 16) ? "conflict" : "suitable"
+    }
+
+    get getStatus () {
+        return this.status
+    }
+
+    makeStatistic() {
+        const all = this.All;
+        const alldiffs = [];
+        for (let term=0; term<4; term++) {
+            for (let i=0; i<4; i++) {
+                    if (all[term].type != all[term].diffs[letters[i]].comparedType) {
+                        alldiffs.push(all[term].diffs[letters[i]].diffValue);
+                    }
+                }
+        }
+
+        //TODO!! переписать без forEach и if!
+        const positiveDiffs = [];
+        alldiffs.forEach(diff => {
+            if (diff >= 0) {
+                positiveDiffs.push(diff)
+            }
+        });
+        const sorted = positiveDiffs.sort(function(a, b){return b-a});
+
+        this.stats = {
+            min: sorted[sorted.length-1],
+            max: sorted[0],
+            sum: sorted.reduce((accumulator, diff) => accumulator + diff)
+        }
+    }
 
 
-//radio button
-function rad (name) {
+    makePrice() {
+        const terms = this.All.map((one) => {
+            return one.name
+        })
+        //toDO! надо как-то оптимизировать, + сделать проверку на acy более универсальной,
+        // вдруг появятся еще терминаторы, которые продаются только миксом
+        const arrayOfPr = [];
+        let priceMix = 0;
+        let isAcy = 0;
+        terms.forEach((term) => {
+            if (allterms[term].price[0]?.priceForOne == false) {
+                    isAcy += 1;
+                }
+            const pr = {
+                terminator: term,
+                price: allterms[term].price[0].rub,
+                company: allterms[term].price[0].company,
+                info: allterms[term].price[0].info
+            };
+            arrayOfPr.push(pr);
+            if (isAcy>1 && allterms[term].price[0]?.priceForOne == false) {
+                priceMix += 0
+            } else {
+                priceMix += pr.price;
+            }
+            
+        })
+        this.prices = arrayOfPr;
+        this.sumPrice = priceMix;
+    }
+
+    priceCategory(cat) {
+        let categories = cat;
+        let ranges = [];
+        for (let i = 0; i<(categories.length-1); i++) {
+            let range = [];
+                for (let ii=categories[i]; ii<categories[i+1]; ii++) {
+                    range.push(ii);
+                };
+            ranges.push(range);
+        };
+
+        for (let i=0; i<ranges.length; i++) {
+            if (ranges[i].some(a => a==this.sumPrice)){
+                this.generalSort = {
+                    category: i+1,
+                    score: (i+1)*1000 + this.stats.sum
+                }
+            }
+        }
+    }
+}
+
+function checkMode (name) {
     let r=document.getElementsByName(name);
     let output = r[0].checked ? "suitable" : "all";
     return output
 }
 
-//checkbox All
-function chbox (name) {
-    let ch=document.getElementsByName(name);
-    let output = ch[0].checked ? "all" : " not all";
-    return output
-}
-
-function selectBlock (blockName) {
-    let mode = chbox(blockName);
-    if (mode == "all") {
-        let block = document.getElementsByName("c"+blockName.slice(-1));
-        for (let i=0; i<block.length; i++) {
-            block[i].checked = "checked"
-        }
-    } else {
-        let block = document.getElementsByName("c"+blockName.slice(-1));
-        for (let i=0; i<block.length; i++) {
-            block[i].checked = false;
+function clear(elementName) {
+        while (elementName.firstChild) {
+            elementName.firstChild.remove();
         }
     }
-}
 
-document.getElementById("run").addEventListener("click", check)
-document.getElementById("block1").addEventListener("change", ()=> selectBlock("blockAll1"));
-document.getElementById("block2").addEventListener("change", ()=> selectBlock("blockAll2"));
-document.getElementById("block3").addEventListener("change", ()=> selectBlock("blockAll3"));
-document.getElementById("block4").addEventListener("change", ()=> selectBlock("blockAll4"));
-
-//преобразует данные о выбранных буквах в массив из объектов для дальнейшей обработки
-function allTerm (chBox2set) {
-    let terminators = []
-    chBox2set.forEach(oneType => {
-        let allOneType = [];
-        for (let i=0; i<oneType.length; i++) {
-            allOneType.push(new Terminator(oneType[i]));
-        }
-        terminators.push(allOneType)
+function toRender (mixes) {
+    clear(out);
+    mixes.forEach (oneMix => {
+        const Out = document.createElement("one-mix");
+        Out.addMix = oneMix;
+        Out.functionOUT();
+        out.appendChild(Out)
     })
-  //  console.log("terminators", terminators);
-    return terminators
 }
 
-//собирает сеты выбранных букв (из одного блока!), на вход также подается старый сет (чтобы добавлять туда новые буквы)
-function checkbox (name, oldset) {
-    let cb=document.getElementsByName(name);
-    let newset = oldset;
-    for (let i=0; i<cb.length; i++) {
-        if (cb[i].checked) {
-            let val = cb[i].value.split("--");
-            if (val[0] == "A") {
-                newset[0].push(val[1]);}
-            if (val[0] == "T") {
-                newset[1].push(val[1])}
-            if (val[0] == "C") {
-                newset[2].push(val[1])}
-            if (val[0] == "G") {
-                newset[3].push(val[1])}
-        }
-    }
-    return newset
-}
+//этот компонент для sort создается заранее 1 раз!
+const wcSort = document.createElement("sort-select");
+const divForSort = document.getElementById("sort");
 
-const fullOutput = document.getElementById("fullOutput")
-function check () {
-    clear(fullOutput);
-    let set = [[],[],[],[]];
-    let chBox1set = checkbox("c1", set);
-    let chBox2set = checkbox("c2", chBox1set);
-    let chBox3set = checkbox("c3", chBox2set);
-    let chBox4set = checkbox("c4", chBox3set);
-  //  console.log("chBox4set", chBox4set);
-    let terminators = allTerm(chBox4set);
+//глобальные переменные!
+let MixesToRender = [];
+let mode;
 
-    let mode = rad("r1") //определяем, нужно ли показывать все варианты миксов или только подходящие
-    let allMixes = makeAllMixes (terminators) //генерируем все существующие варианты миксов
-    console.log("final all mixes", allMixes);
-    if (mode == "suitable") {
-        let suitMixes = findSuitable(allMixes);
-        console.log("final suitable Mixes", suitMixes);
-        WCrender(suitMixes)
-    } else {
-        WCrender(allMixes)
-    }        
-}   
+function run() {
+    mode = checkMode("r1");
+    const terms = makeTermList();
+    const preAllMixes = makeAllMixes(terms);
 
-function clear(element) {
-    while (element.firstChild) {
-        element.firstChild.remove()
-    }
-}    
-
-const NUCLEOTIDES = ['A','T','C','G'];
-
-class Terminator {
-    
-    types = {
-        "ddATP": 296,
-        "ddTTP": 287,
-        "ddUTP": 274,
-        "ddCTP": 272,
-        "ddGTP": 312,
-
-        "acyATP": 271,
-        "acyTTP": 262,
-        "acyCTP": 247,
-        "acyGTP": 287,
-
-        "propargyl-amino-ATP": 348,
-        "propargyl-amino-ddUTP": 326,
-        "propargyl-amino-ddCTP": 325,
-        "propargyl-amino-ddGTP": 264,
-
-        "AA-ddUTP": 328,
-        "amino-11-ddUTP": 441,
-
-        "morATP": 311,
-        "morTTP": 302,
-        "morCTP": 287,
-        "morGTP": 327,
-
-        "d4TTP": 290
+    const allMixes = [];
+    for (let i=0; i<preAllMixes.length; i++) {
+        allMixes.push(new Mix(preAllMixes[i]))
     }
 
-    type = '';
-    weight = 0;
-    dA = { diff: 0, type: "" };
-    dT = { diff: 0, type: "" };
-    dC = { diff: 0, type: "" };
-    dG = { diff: 0, type: "" };
-
-    get value() {
-        return { type: this.type, weight: this.weight }
-    }
-
-    constructor(type) {
-        this.type = type;
-        this.weight = this.types[type];
-        if (!this.weight) throw new Error("Weight not found! Check type or contact Alina.");
-    }
-
-    calcDiff(terms) { // ATCG - объекты класса Terminator
-        NUCLEOTIDES.forEach(N => {
-            this[`d${N}`] = {
-                diff: this.weight - terms[N].weight,
-                type: terms[N].type,
-                difftype: `${this.type}-${terms[N].type}`
-            };
-        })
-    }
-
-    get isConflict() {
-        return [this.dA, this.dT, this.dC, this.dG].find((e)=> {
-            if (Math.abs(e.diff) < 16 && e.type != this.type) {
-                return true 
-            } else {
-                return false
+    function selectSuitable(mixes) {
+        const suitableMixes = [];
+        mixes.forEach ((onemix) => {
+            if (onemix.getStatus == "suitable") {
+                onemix.priceCategory(GeneralSortParametres) //здесь параметры для категорий сортировки по цене!
+                suitableMixes.push(onemix)
             }
-        })
-    }
-
-    get valueFull() {
-        const value = {
-            type: this.type,
-            weight: this.weight,
-        }
-        value[`${this.dA.type}`] = this.dA.diff;
-        value[`${this.dT.type}`] = this.dT.diff;
-        value[`${this.dC.type}`] = this.dC.diff;
-        value[`${this.dG.type}`] = this.dG.diff;
-
-        return value;
-    }
-
-    getCalcValueFull({A,T,C,G}) { // ATCG - объекты класса Terminator
-        this.calcDiff({A,T,C,G});
-        return this.valueFull;
-    }
-
-    get clone() {
-        return new Terminator(this.type);
-    }
-}
-
-class Mix {
-    constructor({A,T,C,G}) { // ATCG - объекты класса Terminator
-        this.A = A;
-        this.T = T;
-        this.C = C;
-        this.G = G;
-    }
-    get value() {
-        return {
-            A: this.A,
-            T: this.T,
-            C: this.C,
-            G: this.G,
-        }
-    }
-    calcDiff() {
-        this.A.calcDiff(this.value);
-        this.T.calcDiff(this.value);
-        this.C.calcDiff(this.value);
-        this.G.calcDiff(this.value);
-    }
-    get diffTable() {
-        const terms = [
-            this.A.getCalcValueFull(this.value),
-            this.T.getCalcValueFull(this.value),
-            this.G.getCalcValueFull(this.value),
-            this.C.getCalcValueFull(this.value),
-        ];
-
-        const table = {};
-
-        terms.forEach( term => {
-            Object.entries(term).forEach( ([key,value]) => {
-                if (!table[key]) table[key] = [];
-                table[key].push(value);
-            })
         });
-        
-        return table;
+        return suitableMixes
     }
-    get isConflict() {
-        this.calcDiff();
-        return (this.A.isConflict || this.T.isConflict || this.C.isConflict || this.G.isConflict);
+
+    MixesToRender = mode=="suitable" ? selectSuitable(allMixes) : allMixes;
+
+    if (selectedSort == "general" && mode != "suitable") {
+        selectedSort = false;
     }
+
+    if (MixesToRender.length > 0) { //если микс существует
+        if (selectedSort) { //если сортировка была выбрана в прошлом ране            
+            const sorted = MixesToRender.sort(sortMethods[selectedSort]);
+            toRender(sorted);
+            sortInterface(sorted);
+            
+        } else { //если сортировка none
+            toRender(MixesToRender);
+            sortInterface(MixesToRender);
+        }
+    } else { // если микса не существует
+        clear(out);
+        clear(divForSort)
+        //надо удалять sortInterface если он существует
+        const noMix = document.createElement("warning-output");
+        out.appendChild(noMix);
+    }
+    const show = ["ddATP", "ddGTP"];
+    toShow(MixesToRender, show);
+
+    console.log(MixesToRender)
 }
 
-    //генерируем все существующие варианты миксов
-    function makeAllMixes (terminators) {
-        let allMixes = [];
-        for (let typeNTP=0; typeNTP<4; typeNTP++) {
-            for (let varNTP1=0; varNTP1<terminators[typeNTP].length; varNTP1++) {
-                if (terminators[typeNTP+1]) {
-                for (let varNTP2=0; varNTP2<terminators[typeNTP+1].length; varNTP2++) {
-                    if (terminators[typeNTP+2]) {
-                    for (let varNTP3=0; varNTP3<terminators[typeNTP+2].length; varNTP3++) {
-                        if (terminators[typeNTP+3]) {
-                            for (let varNTP4=0; varNTP4<terminators[typeNTP+3].length; varNTP4++) {
-                                const mix = {
-                                    A: terminators[typeNTP][varNTP1].clone,
-                                    T: terminators[typeNTP+1][varNTP2].clone,
-                                    C: terminators[typeNTP+2][varNTP3].clone,
-                                    G: terminators[typeNTP+3][varNTP4].clone,
-                                };
-                                allMixes.push(new Mix(mix));
-                            }}}
-                        }
-                    }
-                }   
-            }
-        }
-        return allMixes
+function toShow (allmixes, show) {
+    return allmixes.filter ((onemix) => 
+        letters.some((letter) =>
+            show.includes(onemix[letter].name)
+        )
+    )
+}
+
+
+function sortInterface(mixes) {
+    wcSort.addMixes = mixes;
+    if (mode != "suitable") {
+        wcSort.stateGeneralSelect(true)
+    } else {
+        wcSort.stateGeneralSelect(false)
     }
+    divForSort.appendChild(wcSort);
+}
 
-    function massCompare (mix) {
-        let mix1 = [];
-        mix.forEach(obj => {
-            mix1.push(obj.weight)
-        })
-        mix1 = mix1.sort();
-        let arrayConflicts = [];
-        for (let i=0; i < mix1.length; i++) {
-            let mass1 = mix1[i];
-            for (let k = i + 1; k < mix1.length; k++) {
-                let mass2 = mix1[k];
-                let delta = mass2 - mass1;
-                if (delta < 16 && delta > -16) {
-                    return ["there is a conflict"]
-                }
-            }
-        }
-        return arrayConflicts
-    }
 
-    //из всех вариантов миксов составить список из подходящих
-    function findSuitable (allMixes) {
-            let suitMixes = [];
-            allMixes.forEach(mix => {
-                if (!mix.isConflict) {
-                suitMixes.push(mix);
-                }
-            })
-            return suitMixes
-        }
+const ButtonRun = document.getElementById("run");
 
-    //функция для рендера веб-компонентов и дальнейшего аутпута
-    function WCrender (Mixes) {
-        Mixes.forEach((oneMix) => {
-            const onetable = new WCoutTable();
-            console.log(oneMix);
-            console.log(oneMix.diffTable);
-            onetable.createHTable(oneMix.diffTable);
-            fullOutput.appendChild(onetable);
-        })
-    }
 
-    document.getElementById("run").addEventListener("click", check)
+ButtonRun.addEventListener("click", run);
+
+
+
+
 
 </script>
-
-
 
 </body>
 </html>
