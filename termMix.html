@@ -174,7 +174,7 @@ input:checked {
         </div>
     </div> 
     <div class="oneCheckBox"> 
-        <input name="blockAll1" id="block1" type="checkbox" value="">
+        <input name="blockAll1" id="block1" type="checkbox" value="" checked="checked">
          Select All
     </div>
 </div>
@@ -316,13 +316,8 @@ class WCoutTable extends HTMLElement {
         }
     }
     createHTable(object) {
+        console.log(object)
         this.clear();
-        /*
-            {
-                'Weight': [1,2,3,4,5],
-                'Type': [1,2,3,4,5],
-            }
-        */
         const tableHTML = 
         `<tr>
             ${
@@ -423,10 +418,10 @@ function check () {
 
     let mode = rad("r1") //определяем, нужно ли показывать все варианты миксов или только подходящие
     let allMixes = makeAllMixes (terminators) //генерируем все существующие варианты миксов
-  //  console.log("final all mixes", allMixes);
+    console.log("final all mixes", allMixes);
     if (mode == "suitable") {
         let suitMixes = findSuitable(allMixes);
-   //     console.log("final suitable Mixes", suitMixes);
+        console.log("final suitable Mixes", suitMixes);
         WCrender(suitMixes)
     } else {
         WCrender(allMixes)
@@ -639,6 +634,8 @@ class Mix {
     function WCrender (Mixes) {
         Mixes.forEach((oneMix) => {
             const onetable = new WCoutTable();
+            console.log(oneMix);
+            console.log(oneMix.diffTable);
             onetable.createHTable(oneMix.diffTable);
             fullOutput.appendChild(onetable);
         })
