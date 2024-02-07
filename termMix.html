@@ -96,6 +96,18 @@ color: var(--text_inside);
     text-align: center;
     font-size: 1.7rem;
 }
+
+#selectShow {
+    margin-bottom: 2rem;
+}
+
+#selectedShow {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+}
+
 </style>
 
 
@@ -230,7 +242,7 @@ color: var(--text_inside);
             background: var(--main_background-color);
         }
 
-        th {
+        #diffs th {
             width: 10em;
         }
         th:first-child {
@@ -245,13 +257,14 @@ color: var(--text_inside);
         }
 
         #stats {
-            width: min-content;
+            width: 14rem;
             height: fit-content;
         }
         #stats th {
             text-align: start;
             padding: .25rem .75rem;
         }
+
         *:empty {
             display: none;
         }
@@ -286,6 +299,7 @@ color: var(--text_inside);
             <option name="sort" value="min"> by min </option>
             <option name="sort" value="max"> by max </option>
             <option name="sort" value="sum"> by sum </option>
+            <option name="sort" value="geomMean"> by geom mean </option>
         </select>
     </div>
 
@@ -323,10 +337,43 @@ color: var(--text_inside);
     <div>
         <label for="show">Filter</label>
         <select name="show">
-            <option name="sort" id="default" selected> All </option>
         </select>
     </div>
 
+</template>
+
+<template id="AddedFilter">
+    <div>
+        <p></p>
+        <button>x</button>
+    </div>
+
+    <style>
+        p {
+            margin: 0;
+        }
+
+        div {
+            display: flex;
+            gap: 0.5rem;
+            flex-direction: row;
+            align-items: center;
+        }
+
+        input {
+            all: unset;
+            width: 1.5rem;
+            height: 1.5rem;
+            display: block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.5rem;
+            background: white;
+            font-weight: bold;
+            color: var(--text_inside);
+            }
+    </style>
 </template>
 
     <header id="mainHeader">Termination Mix</header>
@@ -337,9 +384,9 @@ color: var(--text_inside);
     <div id="all"></div>
     <div id='withBut'><but id="run">Run</but></div>
     <div id="selectShow"></div>
+    <div id="selectedShow"></div>
     <div id="sort"></div>
     <div id="out"></div>
-
 
 <script>
 
@@ -354,9 +401,11 @@ const sortMethods = {
             min: (a,b) => a.stats.min - b.stats.min,
             max: (a,b) => a.stats.max - b.stats.max,
             sum: (a,b) => a.stats.sum - b.stats.sum,
+            geomMean: (a,b) => a.stats["geom mean"] - b.stats["geom mean"]
         }
 
-let selectedSort;
+let selectedSort; //глобальная переменная, выбранный режим сортировки
+let allSelectedTerms = []; //глобальная переменная, все выбранные в чекбоксах буквы 
 
 const allterms = {
         "ddATP": {
@@ -576,6 +625,7 @@ const allterms = {
 
 const out = document.getElementById("out");
 const selectShow = document.getElementById("selectShow"); 
+const selectedShow = document.getElementById("selectedShow");
 
 //web-component for oneTerm - input checkbox inside the block
 customElements.define("one-term", class extends HTMLElement {
@@ -805,12 +855,11 @@ customElements.define("sort-select", class extends HTMLElement {
 
     stateGeneralSelect(state) {
         if (state == true && this.selectGeneralSort.selected == true) {
-            this.selectGeneralSort.selected == false;
+            this.selectGeneralSort.selected = false;
             this.selectDefault.selected = true;
         }
         this.selectGeneralSort.disabled = state;
     }
-
 
     connectedCallback() {
         this.tagSelect.addEventListener("change", () => {
@@ -819,9 +868,6 @@ customElements.define("sort-select", class extends HTMLElement {
             toRender(sortedMixToRender);
         })
     }
-
-
-
 })
 
 //web-component for warning output
@@ -842,8 +888,21 @@ customElements.define("warning-output", class extends HTMLElement {
 })
 
 
-//const test1 = document.createElement("add-filter");
-//selectShow.appendChild(test1);
+
+function renderFilter () {
+    clear(selectShow);
+    const test1 = document.createElement("add-filter");
+    test1.firstAddSelected = allSelectedTerms;
+    selectShow.appendChild(test1);
+}
+
+let toFilter = []; //глобальная переменная, хранит буквы,выбранные в фильтре
+
+//эта глобальная переменная нужна для сортировки внутри селекта
+const termSequence = ["ddATP", "ddTTP", "ddCTP", "ddGTP", "ddUTP",
+"acyATP","acyTTP", "acyCTP", "acyGTP",
+"propargyl-amino-ddATP",  "propargyl-amino-ddUTP", "propargyl-amino-ddCTP", 
+"propargyl-amino-ddGTP", "AA-ddUTP", "amino-11-ddUTP", "morATP", "morUTP", "morCTP","morGTP"];
 
 //web-component for add Filter
 customElements.define("add-filter", class extends HTMLElement {
@@ -857,16 +916,126 @@ customElements.define("add-filter", class extends HTMLElement {
         this.shadowDOM.appendChild(template);
 
         this.selectHTML = this.shadowDOM.querySelector("select");
-        this.addSelected = "ddATP"
+        this.option = new Object;
 
     }
 
-    set addSelected (name) {
-        const displayed = document.createElement("option");
-        displayed.name = "show";
-        displayed.value = name;
-        displayed.innerHTML = name;
-        this.selectHTML.appendChild(displayed)
+    set deleteSelectedOption (name) {
+        this.selectHTML.removeChild(this.option[name]);
+    }
+
+    clearSelect() {
+        while (this.selectHTML.firstChild) {
+            this.selectHTML.firstChild.remove();
+        }
+    }
+
+    sortArrayOfOptionsNames (allOptionsNames) {
+        const objects = allOptionsNames.map((actualOption) => ({
+            index: termSequence.indexOf(actualOption),
+            name: actualOption
+        }));
+
+        const sortedObj = objects.sort((a,b) => a.index - b.index);
+        const sorted = sortedObj.map((obj) => obj.name);
+        
+        return sorted;
+    }
+
+    createFirstSelect() {
+        const optionAll = document.createElement("option");
+        optionAll.name = "show";
+        optionAll.innerHTML = "All";
+        optionAll.disabled = true;
+        optionAll.selected = true;
+        this.selectHTML.appendChild(optionAll);
+    }
+
+    //этот сэттер запускается из функции run, только после запуска рана
+    set firstAddSelected (names) {
+        this.allOptionsNames = names;
+        this.addSelected = this.allOptionsNames // запускаем сэттер, который формирует ВК select со всеми options
+        this.initialMixesToRender = MixesToRender; //обновляем initialMixesToRender только после рана!
+    }
+
+    //а этот сэттер может запускаться без рана, запускается изнутри, работает каждый раз когда мы добавляем или удаляем option
+    set addSelected (names) {
+        this.createFirstSelect() //создаем первый селект All
+        this.optionsNames = this.sortArrayOfOptionsNames(names);// в этой переменной храним только те options, которые должны быть в селекте
+        this.optionsNames.forEach (name => {
+            const displayed = document.createElement("option");
+            displayed.name = "show";
+            displayed.value = name;
+            displayed.innerHTML = name;
+            this.selectHTML.appendChild(displayed);
+            this.option[name] = displayed;
+        })
+    }
+
+    set deleteSelected(wc) {
+        selectedShow.removeChild(wc);
+    }
+
+    RenderUpdated() {
+        if (toFilter.length > 0) {
+                MixesToRender = toShow (this.initialMixesToRender, toFilter);
+                toRender(MixesToRender);
+            } else {
+                toRender(this.initialMixesToRender);
+            }
+    }
+
+    connectedCallback() {
+        this.selectHTML.addEventListener("change", () => {
+            toFilter.push(this.selectHTML.value);
+            const webcompAdded = document.createElement("added-filter");
+            webcompAdded.addTerm = this.selectHTML.value;
+
+            this.optionsNames.splice(this.optionsNames.indexOf(this.selectHTML.value), 1); //обновляю optionsNames (убираю оттуда то, что пропало из options)
+            this.clearSelect();
+            this.addSelected = this.optionsNames;
+            this.RenderUpdated();
+
+            webcompAdded.addEventListener("remove", (e) => {
+                this.deleteSelected = e.detail;
+                this.optionsNames.push(e.detail.name);
+                this.clearSelect();
+                this.addSelected = this.optionsNames;
+                toFilter.splice(toFilter.indexOf(e.detail.name), 1);
+                this.RenderUpdated();
+            }) 
+            selectedShow.appendChild(webcompAdded);
+        })
+    }
+
+})
+
+//web-component for added Filter (and delete)
+customElements.define("added-filter", class extends HTMLElement {
+    
+    shadowDOM = this.attachShadow({mode: "closed"});
+
+    constructor() {
+        super();
+
+        const template = document.getElementById('AddedFilter').content.cloneNode(true);
+        this.shadowDOM.appendChild(template);
+
+        this.p = this.shadowDOM.querySelector("p");
+        this.buttonDelete = this.shadowDOM.querySelector("button");
+        this.div = this.shadowDOM.querySelector("div");
+    }
+
+    set addTerm (name) {
+        this.name = name;
+        this.p.innerText = name;
+    }
+
+    connectedCallback() {
+        this.buttonDelete.addEventListener("click", () => {
+            const event = new CustomEvent("remove", { detail: this });
+            this.dispatchEvent(event);
+        })
     }
 
 })
@@ -893,19 +1062,19 @@ const allBlocksElements = allBlocks.map (oneblock => {
     return(block);
 })
 
-
 function makeTermList() {
-    let allSelectedTerms = allBlocksElements
-        .map(oneblock => oneblock.selectedTerms).flat();
-  //  console.log(allSelectedTerms);
+    allSelectedTerms = allBlocksElements
+        .map(oneblock => oneblock.selectedTerms).flat(); //записываем все выбранные терминаторы
+ //   console.log(allSelectedTerms);
     const filtered = letters.reduce((accumulator,letter) => {
         accumulator[letter] = allSelectedTerms.filter(term => allterms[term].type == letter);
         return accumulator;
-    }, new Object);
+    }, new Object); //объединяем терминаторы по группам (А, Т, С, G)
  //   console.log(filtered);
     return filtered
 }
 
+//делаем комбинации букв для создания миксов
 function makeAllMixes(terms) {
     let allMixes = [];
         for (let varNTP1=0; varNTP1<terms["A"].length; varNTP1++) {
@@ -1007,7 +1176,8 @@ class Mix {
         this.stats = {
             min: sorted[sorted.length-1],
             max: sorted[0],
-            sum: sorted.reduce((accumulator, diff) => accumulator + diff)
+            sum: sorted.reduce((accumulator, diff) => accumulator + diff),
+            "geom mean": Number((sorted.reduce((accumulator, diff) => accumulator * diff))**(1/6)).toFixed(2)
         }
     }
 
@@ -1118,31 +1288,25 @@ function run() {
 
     MixesToRender = mode=="suitable" ? selectSuitable(allMixes) : allMixes;
 
+    //сбросить сортировку (глобальная переменная selectedSort) при таком условии
     if (selectedSort == "general" && mode != "suitable") {
         selectedSort = false;
     }
 
     if (MixesToRender.length > 0) { //если микс существует
-        if (selectedSort) { //если сортировка была выбрана в прошлом ране            
-            const sorted = MixesToRender.sort(sortMethods[selectedSort]);
-            toRender(sorted);
-            sortInterface(sorted);
-            
-        } else { //если сортировка none
-            toRender(MixesToRender);
-            sortInterface(MixesToRender);
-        }
+        renderFilter (); //рендерим веб-компонент фильтр
+        
+        //если сортировка была выбрана в прошлом ране, то меняем MixesToRender
+        MixesToRender = selectedSort ? MixesToRender.sort(sortMethods[selectedSort]) : MixesToRender;
+        toRender(MixesToRender);
+        sortInterface(MixesToRender);
+
     } else { // если микса не существует
         clear(out);
-        clear(divForSort)
-        //надо удалять sortInterface если он существует
+        clear(divForSort);
         const noMix = document.createElement("warning-output");
         out.appendChild(noMix);
     }
-    const show = ["ddATP", "ddGTP"];
-    toShow(MixesToRender, show);
-
-    console.log(MixesToRender)
 }
 
 function toShow (allmixes, show) {
@@ -1152,7 +1316,6 @@ function toShow (allmixes, show) {
         )
     )
 }
-
 
 function sortInterface(mixes) {
     wcSort.addMixes = mixes;
