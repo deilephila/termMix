@@ -376,6 +376,8 @@ color: var(--text_inside);
     </style>
 </template>
 
+<template id="outputTemplate"></template>
+
     <header id="mainHeader">Termination Mix</header>
     <div class = "mode">
         <input name="r1" type="radio" value="" checked="checked"> Suitable only
@@ -392,21 +394,7 @@ color: var(--text_inside);
 
 const letters = ["A", "T", "C", "G"];
 
-const GeneralSortParametres = [28, 50, 70, 100, 440]; //параметры general сортировки 
-// (интервалы цены 28-49, 50-69, 70-99, выше 99 рублей)
-
-const sortMethods = {
-            general: (a,b) => a.generalSort.score - b.generalSort.score,
-            price: (a,b) => a.sumPrice - b.sumPrice,
-            min: (a,b) => a.stats.min - b.stats.min,
-            max: (a,b) => a.stats.max - b.stats.max,
-            sum: (a,b) => a.stats.sum - b.stats.sum,
-            geomMean: (a,b) => a.stats["geom mean"] - b.stats["geom mean"]
-        }
-
-let selectedSort; //глобальная переменная, выбранный режим сортировки
-let allSelectedTerms = []; //глобальная переменная, все выбранные в чекбоксах буквы 
-
+//мапка со всей инфой о терминаторах
 const allterms = {
         "ddATP": {
             type: "A",
@@ -623,11 +611,39 @@ const allterms = {
             massSpectra: 290}
     }
 
+
+//все виды сортировки
+const sortMethods = {
+            general: (a,b) => a.generalSort.score - b.generalSort.score,
+            price: (a,b) => a.sumPrice - b.sumPrice,
+            min: (a,b) => a.stats.min - b.stats.min,
+            max: (a,b) => a.stats.max - b.stats.max,
+            sum: (a,b) => a.stats.sum - b.stats.sum,
+            geomMean: (a,b) => a.stats["geom mean"] - b.stats["geom mean"]
+        }
+
+//параметры general сортировки 
+const GeneralSortParametres = [28, 50, 70, 100, 440]; /// (интервалы цены 28-49, 50-69, 70-99, выше 99 рублей)
+
+//глобальные переменные
+let selectedSort; //выбранный режим сортировки
+let allSelectedTerms = []; //все выбранные в чекбоксах буквы 
+
+//HTML-элементы
 const out = document.getElementById("out");
 const selectShow = document.getElementById("selectShow"); 
 const selectedShow = document.getElementById("selectedShow");
+const divForSort = document.getElementById("sort");
 
-//web-component for oneTerm - input checkbox inside the block
+
+
+
+
+
+
+
+
+//web-component for input oneTerm - input checkbox inside the block
 customElements.define("one-term", class extends HTMLElement {
     
     shadowDOM = this.attachShadow({mode: "closed"});
@@ -668,7 +684,7 @@ customElements.define("one-term", class extends HTMLElement {
 
 });
 
-//web-component for block of terminators
+//web-component for input block of terminators
 customElements.define("block-select", class extends HTMLElement {
     
     shadowDOM = this.attachShadow({mode: "closed"});
@@ -730,7 +746,7 @@ customElements.define("block-select", class extends HTMLElement {
 
 })
 
-//web-component for output
+//web-component for one mix output
 customElements.define("one-mix", class extends HTMLElement {
     
     shadowDOM = this.attachShadow({mode: "closed"});
@@ -826,13 +842,14 @@ customElements.define("one-mix", class extends HTMLElement {
 
         const infoDetails = this.makeDetails(this.mix);
 
-        let haha = ["ha1", "ha2", "ha3", "ha4"]
         for (let i=0; i<4; i++) {
             this.details[i].innerText = infoDetails[i]
         };
     }
 
 });
+
+
 
 //web-component for sort-select
 customElements.define("sort-select", class extends HTMLElement {
@@ -849,10 +866,8 @@ customElements.define("sort-select", class extends HTMLElement {
         this.selectDefault = this.shadowDOM.getElementById("default");
        
     }
-    set addMixes(mixes) {
-        this.mixesToRender = mixes
-    }
 
+    //для ситуации, когда выбрана general sort, но произошло переключение на all mixes
     stateGeneralSelect(state) {
         if (state == true && this.selectGeneralSort.selected == true) {
             this.selectGeneralSort.selected = false;
@@ -863,10 +878,15 @@ customElements.define("sort-select", class extends HTMLElement {
 
     connectedCallback() {
         this.tagSelect.addEventListener("change", () => {
-            selectedSort = this.tagSelect.value;
-            const sortedMixToRender = this.mixesToRender.sort(sortMethods[selectedSort]);
-            toRender(sortedMixToRender);
+         //   selectedSort = this.tagSelect.value; //изменяем глобальную переменную - это можно будет убрать
+            fullOut.setSortState = this.tagSelect.value; //закидываем sort state в WC output
         })
+    }
+
+    //функция сортировки, запускается из WC output
+    makeSort (mixes) {
+        const sortedMixToRender = mixes.sort(sortMethods[selectedSort]);
+        return sortedMixToRender;
     }
 })
 
@@ -888,16 +908,6 @@ customElements.define("warning-output", class extends HTMLElement {
 })
 
 
-
-function renderFilter () {
-    clear(selectShow);
-    const test1 = document.createElement("add-filter");
-    test1.firstAddSelected = allSelectedTerms;
-    selectShow.appendChild(test1);
-}
-
-let toFilter = []; //глобальная переменная, хранит буквы,выбранные в фильтре
-
 //эта глобальная переменная нужна для сортировки внутри селекта
 const termSequence = ["ddATP", "ddTTP", "ddCTP", "ddGTP", "ddUTP",
 "acyATP","acyTTP", "acyCTP", "acyGTP",
@@ -917,7 +927,11 @@ customElements.define("add-filter", class extends HTMLElement {
 
         this.selectHTML = this.shadowDOM.querySelector("select");
         this.option = new Object;
+        this.toFilter = [];
+    }
 
+    set setAllMixes (mixes) {
+        this.initialMixesToRender = mixes;
     }
 
     set deleteSelectedOption (name) {
@@ -955,7 +969,6 @@ customElements.define("add-filter", class extends HTMLElement {
     set firstAddSelected (names) {
         this.allOptionsNames = names;
         this.addSelected = this.allOptionsNames // запускаем сэттер, который формирует ВК select со всеми options
-        this.initialMixesToRender = MixesToRender; //обновляем initialMixesToRender только после рана!
     }
 
     //а этот сэттер может запускаться без рана, запускается изнутри, работает каждый раз когда мы добавляем или удаляем option
@@ -976,25 +989,28 @@ customElements.define("add-filter", class extends HTMLElement {
         selectedShow.removeChild(wc);
     }
 
-    RenderUpdated() {
-        if (toFilter.length > 0) {
-                MixesToRender = toShow (this.initialMixesToRender, toFilter);
-                toRender(MixesToRender);
+    getFiltered() {
+        if (this.toFilter.length > 0) {
+                let MixesToRender = toShow (this.initialMixesToRender, this.toFilter);
+                console.log("get Filtered", MixesToRender)
+                fullOut.toRender(MixesToRender);
             } else {
-                toRender(this.initialMixesToRender);
+               fullOut.toRender(this.initialMixesToRender);
             }
     }
 
     connectedCallback() {
         this.selectHTML.addEventListener("change", () => {
-            toFilter.push(this.selectHTML.value);
+            this.toFilter.push(this.selectHTML.value);
+            fullOut.setFilterState = this.toFilter;
+
             const webcompAdded = document.createElement("added-filter");
             webcompAdded.addTerm = this.selectHTML.value;
 
             this.optionsNames.splice(this.optionsNames.indexOf(this.selectHTML.value), 1); //обновляю optionsNames (убираю оттуда то, что пропало из options)
             this.clearSelect();
             this.addSelected = this.optionsNames;
-            this.RenderUpdated();
+            this.getFiltered();
 
             webcompAdded.addEventListener("remove", (e) => {
                 this.deleteSelected = e.detail;
@@ -1002,7 +1018,8 @@ customElements.define("add-filter", class extends HTMLElement {
                 this.clearSelect();
                 this.addSelected = this.optionsNames;
                 toFilter.splice(toFilter.indexOf(e.detail.name), 1);
-                this.RenderUpdated();
+                fullOut.setFilterState = toFilter;
+                this.getFiltered();
             }) 
             selectedShow.appendChild(webcompAdded);
         })
@@ -1039,6 +1056,112 @@ customElements.define("added-filter", class extends HTMLElement {
     }
 
 })
+
+
+//web-component for full output 
+customElements.define("all-output", class extends HTMLElement {
+    
+    shadowDOM = this.attachShadow({mode: "closed"});
+
+    constructor() {
+        super();
+
+        const template = document.getElementById('outputTemplate').content.cloneNode(true);
+        this.shadowDOM.appendChild(template);
+
+    }
+
+    set setMixes (mixes) {
+        this.allMixes = mixes;
+    }
+
+    //этот сэттер работает только при запуске рана, тут же задаем mode
+    set setModeAndRender (modeState) {
+        this.mode = modeState;
+        this.MixesAfterMode = this.mode == "suitable" ? this.selectSuitable(this.allMixes) : this.allMixes;
+        if (this.MixesAfterMode.length > 0) {
+            this.toRender(this.MixesAfterMode);
+            this.renderSort () //рендерим веб-компонент sort - он рендерится только при запуске рана
+        } else {
+            this.renderNoMix()
+        };
+    }
+
+    selectSuitable(mixes) {
+        const suitableMixes = [];
+        mixes.forEach ((onemix) => {
+            if (onemix.getStatus == "suitable") {
+                onemix.priceCategory(GeneralSortParametres) //здесь параметры для категорий сортировки по цене!
+                suitableMixes.push(onemix)
+            }
+        });
+        return suitableMixes
+    }
+
+    set setFilterState (state) {
+        this.filterState = state;
+    }
+
+    set setSortState (state) {
+        this.sortState = state;
+        this.MixesToRender = wcSort.makeSort(mixes);
+        this.toRender(this.MixesToRender);
+    }
+
+
+    toRender (mixes) {
+        clear(out); 
+        console.log("toRender", mixes)
+        mixes.forEach (oneMix => {
+            const OneMixOut = document.createElement("one-mix");
+            OneMixOut.addMix = oneMix;
+            OneMixOut.functionOUT();
+            this.shadowDOM.appendChild(OneMixOut);
+        });
+        console.log(mixes);
+
+        this.renderFilter (); //рендерим веб-компонент filter
+        
+
+    }
+
+    renderNoMix () {
+        clear(out);
+        clear(divForSort);
+        const noMix = document.createElement("warning-output");
+        this.shadowDOM.appendChild(noMix);
+    }
+
+    renderFilter () {
+        clear(selectShow);
+        const filterElement = document.createElement("add-filter");
+        filterElement.firstAddSelected = allSelectedTerms;
+        filterElement.setAllMixes = this.MixesAfterMode;
+        selectShow.appendChild(filterElement);
+    }
+
+
+    //эта функция должна вызываться каждый раз при ране, т.к. нужно проводить проверку на general sort
+    renderSort () {
+        //этот ифэлс нужен для ситуации когда выбран general sort, но произошло переключение на all mixes
+        if (this.mode != "suitable") {
+            wcSort.stateGeneralSelect(true)
+        } else {
+            wcSort.stateGeneralSelect(false)
+        }
+        divForSort.appendChild(wcSort);
+    }
+
+
+
+
+})
+
+//этот компонент для sort создается заранее 1 раз! не создается даже после запуска рана! 
+const wcSort = document.createElement("sort-select");
+
+//заранее созданный веб-компонент аутпута
+const fullOut = document.createElement("all-output");
 
 const allBlocks = [ 
     {   name: "Unmodified",
@@ -1235,6 +1358,8 @@ class Mix {
     }
 }
 
+
+
 function checkMode (name) {
     let r=document.getElementsByName(name);
     let output = r[0].checked ? "suitable" : "all";
@@ -1247,26 +1372,7 @@ function clear(elementName) {
         }
     }
 
-function toRender (mixes) {
-    clear(out);
-    mixes.forEach (oneMix => {
-        const Out = document.createElement("one-mix");
-        Out.addMix = oneMix;
-        Out.functionOUT();
-        out.appendChild(Out)
-    })
-}
-
-//этот компонент для sort создается заранее 1 раз!
-const wcSort = document.createElement("sort-select");
-const divForSort = document.getElementById("sort");
-
-//глобальные переменные!
-let MixesToRender = [];
-let mode;
-
 function run() {
-    mode = checkMode("r1");
     const terms = makeTermList();
     const preAllMixes = makeAllMixes(terms);
 
@@ -1275,39 +1381,13 @@ function run() {
         allMixes.push(new Mix(preAllMixes[i]))
     }
 
-    function selectSuitable(mixes) {
-        const suitableMixes = [];
-        mixes.forEach ((onemix) => {
-            if (onemix.getStatus == "suitable") {
-                onemix.priceCategory(GeneralSortParametres) //здесь параметры для категорий сортировки по цене!
-                suitableMixes.push(onemix)
-            }
-        });
-        return suitableMixes
-    }
+    fullOut.setMixes = allMixes;
+    fullOut.setModeAndRender = checkMode("r1");
+    out.appendChild(fullOut);
 
-    MixesToRender = mode=="suitable" ? selectSuitable(allMixes) : allMixes;
-
-    //сбросить сортировку (глобальная переменная selectedSort) при таком условии
-    if (selectedSort == "general" && mode != "suitable") {
-        selectedSort = false;
-    }
-
-    if (MixesToRender.length > 0) { //если микс существует
-        renderFilter (); //рендерим веб-компонент фильтр
-        
-        //если сортировка была выбрана в прошлом ране, то меняем MixesToRender
-        MixesToRender = selectedSort ? MixesToRender.sort(sortMethods[selectedSort]) : MixesToRender;
-        toRender(MixesToRender);
-        sortInterface(MixesToRender);
-
-    } else { // если микса не существует
-        clear(out);
-        clear(divForSort);
-        const noMix = document.createElement("warning-output");
-        out.appendChild(noMix);
-    }
 }
+
+
 
 function toShow (allmixes, show) {
     return allmixes.filter ((onemix) => 
@@ -1317,20 +1397,9 @@ function toShow (allmixes, show) {
     )
 }
 
-function sortInterface(mixes) {
-    wcSort.addMixes = mixes;
-    if (mode != "suitable") {
-        wcSort.stateGeneralSelect(true)
-    } else {
-        wcSort.stateGeneralSelect(false)
-    }
-    divForSort.appendChild(wcSort);
-}
 
 
 const ButtonRun = document.getElementById("run");
-
-
 ButtonRun.addEventListener("click", run);
 
 
